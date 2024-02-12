@@ -23,7 +23,7 @@ app.use(
     resave: false,
     saveUninitialized: true,
     store: MongoStore.create({
-      mongoUrl: "mongodb://localhost:27017/ramppay-session",
+      mongoUrl: `mongodb+srv://danielwari:${process.env.key}@ramppay.jmcq7vl.mongodb.net/ramppay-session`,
       ttl: 60 * 60,
     }),
     cookie: { expires: expirationDate },
@@ -40,7 +40,7 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-const mongoUrl = "mongodb://localhost:27017/ramppay-session";
+const mongoUrl = `mongodb+srv://danielwari:${process.env.key}@ramppay.jmcq7vl.mongodb.net/ramppay-session`;
 const client = new MongoClient(mongoUrl);
 
 app.use((err, req, res, next) => {
