@@ -1,23 +1,14 @@
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient } = require("mongodb");
 const mongoose = require("mongoose");
 require("dotenv").config();
 
 const mongoURI = `mongodb+srv://danielwari:${process.env.key}@ramppay.jmcq7vl.mongodb.net/?retryWrites=true&w=majority`;
 
-const client = new MongoClient(mongoURI, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  },
-});
+const client = new MongoClient(mongoURI);
 
 const mongooseURI = `mongodb+srv://danielwari:${process.env.key}@ramppay.jmcq7vl.mongodb.net/ramppay`;
 
-mongoose.connect(mongooseURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+mongoose.connect(mongooseURI);
 
 const userSchema = mongoose.Schema({
   fullname: {
