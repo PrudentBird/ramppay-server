@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-require('dotenv').config();
+require("dotenv").config();
 const cors = require("cors");
 const UserModel = require("./config/database");
 const { hashSync } = require("bcrypt");
@@ -10,7 +10,6 @@ const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const { MongoClient } = require("mongodb");
 const cookieParser = require("cookie-parser");
-
 
 const expirationDate = new Date(Date.now() + 3600000);
 
@@ -33,8 +32,8 @@ app.use(
 
 app.use(
   cors({
-      credentials: true,
-      origin: "http://localhost:3001",
+    credentials: true,
+    origin: "http://localhost:3001",
   })
 );
 
@@ -166,16 +165,13 @@ app.use(
 
     protectedRouter.use(async (req, res, next) => {
       try {
-        // Get session ID from cookie
         const sessionIdFromCookie = req.cookies.sessionId;
 
-        // Connect and fetch session ID from database
         await client.connect();
 
         const database = client.db("ramppay-session");
         const sessionsCollection = database.collection("sessions");
-
-        const sessionDataFromDB = await sessionsCollection.findOne({
+        await sessionsCollection.findOne({
           _id: sessionIdFromCookie,
         });
 
@@ -196,7 +192,6 @@ app.use(
           }
         );
 
-        // Check if the session ID is valid
         if (
           !sessionDataFromSessionStore ||
           req.user.id !== sessionDataFromSessionStore.passport.user
@@ -207,7 +202,6 @@ app.use(
           });
         }
 
-        // Continue with passport authentication
         passport.authenticate("jwt", (err, user, info, status) => {
           if (err) {
             console.error("Passport authentication error:", err);
@@ -244,6 +238,36 @@ app.use(
     return protectedRouter;
   })()
 );
+
+app.post("/logout", async (req, res) => {
+  try {
+    const sessionIdFromCookie = req.cookies.sessionId;
+
+    await client.connect();
+
+    const database = client.db("ramppay-session");
+    const sessionsCollection = database.collection("sessions");
+
+    await sessionsCollection.deleteOne({ _id: sessionIdFromCookie });
+
+    req.logout();
+
+    res.clearCookie("sessionId");
+
+    return res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    console.error("Error logging out:", error);
+    return res.status(500).json({
+      error: true,
+      message: "Failed to logout",
+    });
+  } finally {
+    await client.close();
+  }
+});
 
 const PORT = 5000;
 app.listen(PORT, () => {
