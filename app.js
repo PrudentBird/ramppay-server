@@ -192,6 +192,8 @@ app.use(
           }
         );
 
+        console.log(req.user);
+
         if (
           !sessionDataFromSessionStore ||
           req.user.id !== sessionDataFromSessionStore.passport.user
