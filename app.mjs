@@ -10,7 +10,7 @@ import mongoPkg from "connect-mongo";
 const { create } = mongoPkg;
 import { MongoClient } from "mongodb";
 import cookieParser from "cookie-parser";
-import "./config/passport.mjs"
+import "./config/passport.mjs";
 
 const mongoUrl = `mongodb+srv://danielwari:${process.env.key}@ramppay.jmcq7vl.mongodb.net/ramppay-session`;
 const client = new MongoClient(mongoUrl);
@@ -33,7 +33,6 @@ app.use(
     // }),
     cookie: {
       expires: expirationDate,
-      httpOnly: true,
     },
   })
 );
@@ -49,7 +48,7 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use(passport.authenticate('session'));
+app.use(passport.authenticate("session"));
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
