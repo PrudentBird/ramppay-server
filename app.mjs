@@ -194,6 +194,7 @@ app.use(
 
         if (
           !sessionDataFromSessionStore ||
+          !req.user ||
           req.user.id !== sessionDataFromSessionStore.passport.user
         ) {
           return res.status(401).json({
