@@ -1,18 +1,18 @@
 import express, { json, urlencoded, Router } from "express";
 const app = express();
 // require("dotenv").config();
-import 'dotenv/config';
+import "dotenv/config";
 import cors from "cors";
 import UserModel from "./config/database.mjs";
 import { hashSync } from "bcrypt";
 // import { verify, sign } from "jsonwebtoken";
-import jwtPkg from 'jsonwebtoken';
+import jwtPkg from "jsonwebtoken";
 const { verify, sign } = jwtPkg;
 // import { initialize, session as _session, authenticate } from "passport";
-import passport from 'passport';
+import passport from "passport";
 import session from "express-session";
 // import { create } from "connect-mongo";
-import mongoPkg from 'connect-mongo';
+import mongoPkg from "connect-mongo";
 const { create } = mongoPkg;
 import { MongoClient } from "mongodb";
 import cookieParser from "cookie-parser";
@@ -34,7 +34,6 @@ app.use(
     saveUninitialized: true,
     store: create({
       client,
-      // mongoUrl: `mongodb+srv://danielwari:${process.env.key}@ramppay.jmcq7vl.mongodb.net/ramppay-session`,
       ttl: 60 * 60,
     }),
     cookie: { expires: expirationDate },
@@ -45,7 +44,7 @@ app.use(
   cors({
     credentials: true,
     origin: `${process.env.origin}`,
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -232,8 +231,6 @@ app.use(
           error: true,
           message: "Internal server error",
         });
-      } finally {
-        // await client.close();
       }
     });
     return protectedRouter;
