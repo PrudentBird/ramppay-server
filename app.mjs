@@ -1,29 +1,40 @@
-const express = require("express");
+import express, { json, urlencoded, Router } from "express";
 const app = express();
-require("dotenv").config();
-const cors = require("cors");
-const UserModel = require("./config/database");
-const { hashSync } = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const passport = require("passport");
-const session = require("express-session");
-const MongoStore = require("connect-mongo");
-const { MongoClient } = require("mongodb");
-const cookieParser = require("cookie-parser");
+// require("dotenv").config();
+import 'dotenv/config';
+import cors from "cors";
+import UserModel from "./config/database.mjs";
+import { hashSync } from "bcrypt";
+// import { verify, sign } from "jsonwebtoken";
+import jwtPkg from 'jsonwebtoken';
+const { verify, sign } = jwtPkg;
+// import { initialize, session as _session, authenticate } from "passport";
+import passport from 'passport';
+import session from "express-session";
+// import { create } from "connect-mongo";
+import mongoPkg from 'connect-mongo';
+const { create } = mongoPkg;
+import { MongoClient } from "mongodb";
+import cookieParser from "cookie-parser";
+
+const mongoUrl = `mongodb+srv://danielwari:${process.env.key}@ramppay.jmcq7vl.mongodb.net/ramppay-session`;
+const client = new MongoClient(mongoUrl);
+await client.connect();
 
 const expirationDate = new Date(Date.now() + 3600000);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(json());
+app.use(urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use(
   session({
-    secret: process.env.key,
+    secret: `${process.env.key}`,
     resave: false,
     saveUninitialized: true,
-    store: MongoStore.create({
-      mongoUrl: `mongodb+srv://danielwari:${process.env.key}@ramppay.jmcq7vl.mongodb.net/ramppay-session`,
+    store: create({
+      client,
+      // mongoUrl: `mongodb+srv://danielwari:${process.env.key}@ramppay.jmcq7vl.mongodb.net/ramppay-session`,
       ttl: 60 * 60,
     }),
     cookie: { expires: expirationDate },
@@ -33,22 +44,19 @@ app.use(
 app.use(
   cors({
     credentials: true,
-    origin: "http://localhost:3000",
+    origin: `${process.env.origin}`,
   })
 );
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-const mongoUrl = `mongodb+srv://danielwari:${process.env.key}@ramppay.jmcq7vl.mongodb.net/ramppay-session`;
-const client = new MongoClient(mongoUrl);
-
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send("Something went wrong!");
 });
 
-require("./config/passport");
+import "./config/passport.mjs";
 
 app.get("/", (req, res) => {
   res.send("Welcome to RampPay");
@@ -110,11 +118,11 @@ app.post("/login", (req, res, next) => {
       let token = user.usertoken;
 
       try {
-        jwt.verify(token, Buffer.from(process.env.key, "base64"));
+        verify(token, Buffer.from(process.env.key, "base64"));
       } catch (error) {
         const payload = { username: user.username };
 
-        token = jwt.sign(payload, Buffer.from(process.env.key, "base64"), {
+        token = sign(payload, Buffer.from(process.env.key, "base64"), {
           expiresIn: "1d",
         });
         user.usertoken = token;
@@ -161,19 +169,11 @@ app.post("/login", (req, res, next) => {
 app.use(
   "/protected",
   (() => {
-    const protectedRouter = express.Router();
+    const protectedRouter = Router();
 
     protectedRouter.use(async (req, res, next) => {
       try {
         const sessionIdFromCookie = req.cookies.sessionId;
-
-        await client.connect();
-
-        const database = client.db("ramppay-session");
-        const sessionsCollection = database.collection("sessions");
-        await sessionsCollection.findOne({
-          _id: sessionIdFromCookie,
-        });
 
         const sessionDataFromSessionStore = await new Promise(
           (resolve, reject) => {
@@ -191,8 +191,6 @@ app.use(
             });
           }
         );
-
-        console.log(req.user);
 
         if (
           !sessionDataFromSessionStore ||
@@ -234,7 +232,7 @@ app.use(
           message: "Internal server error",
         });
       } finally {
-        await client.close();
+        // await client.close();
       }
     });
     return protectedRouter;
@@ -245,7 +243,7 @@ app.post("/logout", async (req, res) => {
   try {
     const sessionIdFromCookie = req.cookies.sessionId;
 
-    await client.connect();
+    // await client.connect();
 
     const database = client.db("ramppay-session");
     const sessionsCollection = database.collection("sessions");
@@ -267,11 +265,15 @@ app.post("/logout", async (req, res) => {
       message: "Failed to logout",
     });
   } finally {
-    await client.close();
+    // await client.close();
   }
 });
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+});
+
+process.on("exit", async () => {
+  await client.close();
 });

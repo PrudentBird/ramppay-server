@@ -1,6 +1,7 @@
-const { MongoClient } = require("mongodb");
-const mongoose = require("mongoose");
-require("dotenv").config();
+import { MongoClient } from "mongodb";
+import { connect, Schema, model } from "mongoose";
+// require("dotenv").config();
+import 'dotenv/config'
 
 const mongoURI = `mongodb+srv://danielwari:${process.env.key}@ramppay.jmcq7vl.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -8,9 +9,9 @@ const client = new MongoClient(mongoURI);
 
 const mongooseURI = `mongodb+srv://danielwari:${process.env.key}@ramppay.jmcq7vl.mongodb.net/ramppay`;
 
-mongoose.connect(mongooseURI);
+connect(mongooseURI);
 
-const userSchema = mongoose.Schema({
+const userSchema = Schema({
   fullname: {
     type: String,
     required: true,
@@ -27,7 +28,7 @@ const userSchema = mongoose.Schema({
   usertoken: String,
 });
 
-const UserModel = mongoose.model("User", userSchema);
+const UserModel = model("User", userSchema);
 
 async function run() {
   try {
@@ -43,4 +44,4 @@ async function run() {
 
 run().catch(console.dir);
 
-module.exports = UserModel;
+export default UserModel;

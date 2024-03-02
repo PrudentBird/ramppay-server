@@ -1,12 +1,13 @@
-const JwtStrategy = require("passport-jwt").Strategy,
-  ExtractJwt = require("passport-jwt").ExtractJwt;
+import { Strategy as JwtStrategy } from "passport-jwt";
+import { ExtractJwt } from "passport-jwt";
 
-const LocalStrategy = require("passport-local").Strategy;
+import { Strategy as LocalStrategy } from "passport-local";
 
 const opts = {};
-const UserModel = require("./database");
-const passport = require("passport");
-const { compareSync } = require("bcrypt");
+import UserModel from "./database.mjs";
+import passport from 'passport';
+// import { use, serializeUser, deserializeUser } from "passport";
+import { compareSync } from "bcrypt";
 
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = Buffer.from(process.env.key, "base64");
