@@ -1,11 +1,9 @@
-import express, { json, urlencoded, Router } from "express";
+import express, { json, urlencoded } from "express";
 const app = express();
 import "dotenv/config";
 import cors from "cors";
 import UserModel from "./config/database.mjs";
 import { hashSync } from "bcrypt";
-import jwtPkg from "jsonwebtoken";
-const { verify, sign } = jwtPkg;
 import passport from "passport";
 import session from "express-session";
 import mongoPkg from "connect-mongo";
@@ -111,76 +109,48 @@ app.post("/login", (req, res, next) => {
     }
 
     req.logIn(user, async () => {
-      let token = user.usertoken;
-
       try {
-        verify(token, Buffer.from(process.env.key, "base64"));
-      } catch (error) {
-        const payload = { username: user.username };
+        await user.save();
 
-        token = sign(payload, Buffer.from(process.env.key, "base64"), {
-          expiresIn: "1d",
+        res.cookie("sessionId", req.sessionID, {
+          httpOnly: false,
+          secure: true,
+          expires: expirationDate,
+          sameSite: "none",
         });
-        user.usertoken = token;
 
-        try {
-          await user.save();
-
-          res.cookie("sessionId", req.sessionID, {
-            httpOnly: false,
-            secure: true,
-            expires: expirationDate,
-            sameSite: "none",
-          });
-
-          return res.send({
-            success: true,
-            message: "Logged in successfully!",
-            token: token,
-          });
-        } catch (error) {
-          return res.send({
-            error: true,
-            message: "Internal server error",
-          });
-        }
+        return res.send({
+          success: true,
+          message: "Logged in successfully!",
+        });
+      } catch (error) {
+        return res.send({
+          error: true,
+          message: "Internal server error",
+        });
       }
-
-      res.cookie("sessionId", req.sessionID, {
-        httpOnly: false,
-        secure: true,
-        expires: expirationDate,
-        sameSite: "none",
-      });
-
-      return res.send({
-        success: true,
-        message: "Logged in successfully!",
-        token: token,
-      });
     });
   })(req, res, next);
 });
 
-app.use('/protected', (req, res) => {
+app.use("/protected", (req, res) => {
   if (req.isAuthenticated()) {
-      res.status(200).json({
-          success: true,
-          data: {
-              user: {
-                  fullname: req.user.fullname,
-                  username: req.user.username,
-              }
-          }
-      });
+    res.status(200).json({
+      success: true,
+      data: {
+        user: {
+          fullname: req.user.fullname,
+          username: req.user.username,
+        },
+      },
+    });
   } else {
-      res.status(401).json({
-          error: true,
-          message: "Authentication failed. User not authenticated."
-      });
+    res.status(401).json({
+      error: true,
+      message: "Authentication failed. User not authenticated.",
+    });
   }
 });
-
 
 app.post("/logout", async (req, res) => {
   try {

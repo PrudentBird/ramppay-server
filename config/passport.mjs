@@ -1,15 +1,7 @@
-import { Strategy as JwtStrategy } from "passport-jwt";
-import { ExtractJwt } from "passport-jwt";
-
 import { Strategy as LocalStrategy } from "passport-local";
-
-const opts = {};
 import UserModel from "./database.mjs";
 import passport from 'passport';
 import { compareSync } from "bcrypt";
-
-opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-opts.secretOrKey = Buffer.from(process.env.key, "base64");
 
 passport.use(
   new LocalStrategy(async (username, password, done) => {
@@ -24,22 +16,6 @@ passport.use(
     } catch (error) {
       return done(error);
     }
-  })
-);
-
-passport.use(
-  new JwtStrategy(opts, function (jwt_payload, done) {
-    UserModel.findOne({ username: jwt_payload.username })
-      .then((user) => {
-        if (user) {
-          return done(null, user);
-        } else {
-          return done(null, false);
-        }
-      })
-      .catch((err) => {
-        return done(err, false);
-      });
   })
 );
 
