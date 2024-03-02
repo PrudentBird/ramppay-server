@@ -10,6 +10,7 @@ import mongoPkg from "connect-mongo";
 const { create } = mongoPkg;
 import { MongoClient } from "mongodb";
 import cookieParser from "cookie-parser";
+import "./config/passport.mjs"
 
 const mongoUrl = `mongodb+srv://danielwari:${process.env.key}@ramppay.jmcq7vl.mongodb.net/ramppay-session`;
 const client = new MongoClient(mongoUrl);
@@ -26,11 +27,14 @@ app.use(
     secret: `${process.env.key}`,
     resave: false,
     saveUninitialized: true,
-    store: create({
-      client,
-      ttl: 60 * 60,
-    }),
-    cookie: { expires: expirationDate },
+    // store: create({
+    //   client,
+    //   ttl: 60 * 60,
+    // }),
+    cookie: {
+      expires: expirationDate,
+      httpOnly: true,
+    },
   })
 );
 

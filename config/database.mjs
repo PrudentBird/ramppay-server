@@ -1,6 +1,5 @@
 import { MongoClient } from "mongodb";
 import { connect, Schema, model } from "mongoose";
-// require("dotenv").config();
 import 'dotenv/config'
 
 const mongoURI = `mongodb+srv://danielwari:${process.env.key}@ramppay.jmcq7vl.mongodb.net/?retryWrites=true&w=majority`;
