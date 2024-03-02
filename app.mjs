@@ -162,7 +162,7 @@ app.post("/login", (req, res, next) => {
   })(req, res, next);
 });
 
-app.get('/protected', (req, res) => {
+app.use('/protected', (req, res) => {
   if (req.isAuthenticated()) {
       res.status(200).json({
           success: true,
