@@ -18,10 +18,6 @@ await client.connect();
 
 const expirationDate = new Date(Date.now() + 3600000);
 
-app.use(json());
-app.use(urlencoded({ extended: true }));
-app.use(cookieParser());
-
 app.use(
   session({
     secret: `${process.env.key}`,
@@ -37,6 +33,12 @@ app.use(
   })
 );
 
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(json());
+app.use(urlencoded({ extended: true }));
+app.use(cookieParser());
+
 app.use(
   cors({
     credentials: true,
@@ -45,8 +47,7 @@ app.use(
   })
 );
 
-app.use(passport.initialize());
-app.use(passport.session());
+
 
 app.use(passport.authenticate("session"));
 
@@ -119,7 +120,7 @@ app.post("/login", (req, res, next) => {
 
         res.cookie("sessionId", req.sessionID, {
           httpOnly: false,
-          secure: true,
+          secure: false,
           expires: expirationDate,
           sameSite: "none",
         });
