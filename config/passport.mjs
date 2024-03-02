@@ -6,7 +6,6 @@ import { Strategy as LocalStrategy } from "passport-local";
 const opts = {};
 import UserModel from "./database.mjs";
 import passport from 'passport';
-// import { use, serializeUser, deserializeUser } from "passport";
 import { compareSync } from "bcrypt";
 
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();

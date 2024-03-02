@@ -1,17 +1,13 @@
 import express, { json, urlencoded, Router } from "express";
 const app = express();
-// require("dotenv").config();
 import "dotenv/config";
 import cors from "cors";
 import UserModel from "./config/database.mjs";
 import { hashSync } from "bcrypt";
-// import { verify, sign } from "jsonwebtoken";
 import jwtPkg from "jsonwebtoken";
 const { verify, sign } = jwtPkg;
-// import { initialize, session as _session, authenticate } from "passport";
 import passport from "passport";
 import session from "express-session";
-// import { create } from "connect-mongo";
 import mongoPkg from "connect-mongo";
 const { create } = mongoPkg;
 import { MongoClient } from "mongodb";
@@ -166,83 +162,29 @@ app.post("/login", (req, res, next) => {
   })(req, res, next);
 });
 
-app.use(
-  "/protected",
-  (() => {
-    const protectedRouter = Router();
-
-    protectedRouter.use(async (req, res, next) => {
-      try {
-        const sessionIdFromCookie = req.cookies.sessionId;
-
-        const sessionDataFromSessionStore = await new Promise(
-          (resolve, reject) => {
-            req.sessionStore.get(sessionIdFromCookie, (error, sessionData) => {
-              if (error) {
-                console.error("Error retrieving session:", error);
-                return reject(error);
-              }
-
-              if (!sessionData) {
-                console.error("Session not found in store");
-                return reject("Session not found");
-              }
-              resolve(sessionData);
-            });
-          }
-        );
-
-        if (
-          !sessionDataFromSessionStore ||
-          !req.user ||
-          req.user.id !== sessionDataFromSessionStore.passport.user
-        ) {
-          return res.status(401).json({
-            error: true,
-            message: "Invalid session ID. Authentication failed.",
-          });
-        }
-
-        passport.authenticate("jwt", (err, user, info, status) => {
-          if (err) {
-            console.error("Passport authentication error:", err);
-            return next(err);
-          }
-          if (!user) {
-            console.error("Passport authentication failed:", info);
-            return res.status(401).json({
-              error: true,
-              message: "Authentication failed",
-            });
-          }
-
-          res.status(200).json({
-            success: true,
-            data: {
+app.get('/protected', (req, res) => {
+  if (req.isAuthenticated()) {
+      res.status(200).json({
+          success: true,
+          data: {
               user: {
-                fullname: user.fullname,
-                username: user.username,
-              },
-            },
-          });
-        })(req, res, next);
-      } catch (error) {
-        console.error("Unhandled error:", error);
-        return res.status(500).json({
+                  fullname: req.user.fullname,
+                  username: req.user.username,
+              }
+          }
+      });
+  } else {
+      res.status(401).json({
           error: true,
-          message: "Internal server error",
-        });
-      }
-    });
-    return protectedRouter;
-  })()
-);
+          message: "Authentication failed. User not authenticated."
+      });
+  }
+});
+
 
 app.post("/logout", async (req, res) => {
   try {
     const sessionIdFromCookie = req.cookies.sessionId;
-
-    // await client.connect();
 
     const database = client.db("ramppay-session");
     const sessionsCollection = database.collection("sessions");
