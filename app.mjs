@@ -23,10 +23,6 @@ app.use(
     secret: `${process.env.key}`,
     resave: false,
     saveUninitialized: true,
-    // store: create({
-    //   client,
-    //   ttl: 60 * 60,
-    // }),
     cookie: {
       expires: expirationDate,
     },
@@ -46,10 +42,6 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-
-
-
-app.use(passport.authenticate("session"));
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
