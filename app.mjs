@@ -6,15 +6,8 @@ import UserModel from "./config/database.mjs";
 import { hashSync } from "bcrypt";
 import passport from "passport";
 import session from "express-session";
-import mongoPkg from "connect-mongo";
-const { create } = mongoPkg;
-import { MongoClient } from "mongodb";
 import cookieParser from "cookie-parser";
 import "./config/passport.mjs";
-
-const mongoUrl = `mongodb+srv://danielwari:${process.env.key}@ramppay.jmcq7vl.mongodb.net/ramppay-session`;
-const client = new MongoClient(mongoUrl);
-await client.connect();
 
 const expirationDate = new Date(Date.now() + 3600000);
 
@@ -51,7 +44,7 @@ app.use((err, req, res, next) => {
 import "./config/passport.mjs";
 
 app.get("/", (req, res) => {
-  res.send("Welcome to RampPay");
+  res.send("Welcome to RampPay Server");
 });
 
 app.post("/register", (req, res) => {
@@ -112,7 +105,7 @@ app.post("/login", (req, res, next) => {
 
         res.cookie("sessionId", req.sessionID, {
           httpOnly: false,
-          secure: false,
+          secure: true,
           expires: expirationDate,
           sameSite: "none",
         });
@@ -152,37 +145,23 @@ app.use("/protected", (req, res) => {
 
 app.post("/logout", async (req, res) => {
   try {
-    const sessionIdFromCookie = req.cookies.sessionId;
-
-    const database = client.db("ramppay-session");
-    const sessionsCollection = database.collection("sessions");
-
-    await sessionsCollection.deleteOne({ _id: sessionIdFromCookie });
-
-    req.logout();
-
-    res.clearCookie("sessionId");
-
-    return res.status(200).json({
-      success: true,
-      message: "Logged out successfully",
+    req.logout(() => {
+      res.status(200).json({
+        success: true,
+        message: "Logged out successfully",
+      });
     });
+    return res.clearCookie("sessionId");
   } catch (error) {
     console.error("Error logging out:", error);
     return res.status(500).json({
       error: true,
       message: "Failed to logout",
     });
-  } finally {
-    // await client.close();
   }
 });
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-});
-
-process.on("exit", async () => {
-  await client.close();
 });
