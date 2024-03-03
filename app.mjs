@@ -31,6 +31,8 @@ app.use((err, req, res, next) => {
 });
 
 app.post("/logout", async (req, res) => {
+  console.log(req.session);
+  console.log(req.user);
   try {
     req.logout(() => {
       res.clearCookie("sessionId");
@@ -54,6 +56,7 @@ const expirationDate = new Date(Date.now() + 3600000);
 
 app.use(
   session({
+    sameSite: "none",
     secret: `${process.env.key}`,
     resave: false,
     saveUninitialized: true,
