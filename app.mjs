@@ -8,6 +8,12 @@ import passport from "passport";
 import session from "express-session";
 import cookieParser from "cookie-parser";
 import "./config/passport.mjs";
+import { create } from "connect-mongo";
+import { MongoClient } from "mongodb";
+
+const mongoUrl = `mongodb+srv://danielwari:${process.env.key}@ramppay.jmcq7vl.mongodb.net/ramppay-session`;
+const client = new MongoClient(mongoUrl);
+await client.connect();
 
 app.use(
   cors({
@@ -59,6 +65,10 @@ app.use(
     secret: `${process.env.key}`,
     resave: false,
     saveUninitialized: true,
+    store: create({
+      client,
+      ttl: 60 * 60,
+    }),
     cookie: {
       httpOnly: false,
       secure: true,
@@ -172,4 +182,8 @@ app.use("/protected", (req, res) => {
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+});
+
+process.on("exit", async () => {
+  await client.close();
 });
