@@ -9,6 +9,47 @@ import session from "express-session";
 import cookieParser from "cookie-parser";
 import "./config/passport.mjs";
 
+app.use(
+  cors({
+    credentials: true,
+    origin: `${process.env.origin}`,
+  })
+);
+
+app.use(json());
+app.use(urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(passport.initialize());
+
+app.get("/", (req, res) => {
+  res.send("Welcome to RampPay Server");
+});
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send("Something went wrong!");
+});
+
+app.post("/logout", async (req, res) => {
+  try {
+    req.logout(() => {
+      res.clearCookie("sessionId");
+      res.clearCookie("connect.sid");
+      res.status(200).json({
+        success: true,
+        message: "Logged out successfully",
+      });
+    });
+    return [];
+  } catch (error) {
+    console.error("Error logging out:", error);
+    return res.status(500).json({
+      error: true,
+      message: "Failed to logout",
+    });
+  }
+});
+
 const expirationDate = new Date(Date.now() + 3600000);
 
 app.use(
@@ -22,27 +63,8 @@ app.use(
   })
 );
 
-app.use(passport.initialize());
+
 app.use(passport.session());
-app.use(json());
-app.use(urlencoded({ extended: true }));
-app.use(cookieParser());
-
-app.use(
-  cors({
-    credentials: true,
-    origin: `${process.env.origin}`,
-  })
-);
-
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send("Something went wrong!");
-});
-
-app.get("/", (req, res) => {
-  res.send("Welcome to RampPay Server");
-});
 
 app.post("/register", (req, res) => {
   const user = new UserModel({
@@ -122,6 +144,8 @@ app.post("/login", (req, res, next) => {
 });
 
 app.use("/protected", (req, res) => {
+  console.log(req.session);
+  console.log(req.user);
   if (req.isAuthenticated()) {
     res.status(200).json({
       success: true,
@@ -136,24 +160,6 @@ app.use("/protected", (req, res) => {
     res.status(401).json({
       error: true,
       message: "Authentication failed. User not authenticated.",
-    });
-  }
-});
-
-app.post("/logout", async (req, res) => {
-  try {
-    req.logout(() => {
-      res.status(200).json({
-        success: true,
-        message: "Logged out successfully",
-      });
-    });
-    return res.clearCookie("sessionId");
-  } catch (error) {
-    console.error("Error logging out:", error);
-    return res.status(500).json({
-      error: true,
-      message: "Failed to logout",
     });
   }
 });
