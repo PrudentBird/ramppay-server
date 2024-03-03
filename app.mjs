@@ -56,12 +56,13 @@ const expirationDate = new Date(Date.now() + 3600000);
 
 app.use(
   session({
-    sameSite: "none",
     secret: `${process.env.key}`,
     resave: false,
     saveUninitialized: true,
     cookie: {
       expires: expirationDate,
+      sameSite: "none",
+      secure: true,
     },
   })
 );
