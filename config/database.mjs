@@ -3,9 +3,7 @@ import { connect, Schema, model } from "mongoose";
 import 'dotenv/config'
 
 const mongoURI = `mongodb+srv://danielwari:${process.env.key}@ramppay.jmcq7vl.mongodb.net/?retryWrites=true&w=majority`;
-
 const client = new MongoClient(mongoURI);
-
 const mongooseURI = `mongodb+srv://danielwari:${process.env.key}@ramppay.jmcq7vl.mongodb.net/ramppay`;
 
 connect(mongooseURI);

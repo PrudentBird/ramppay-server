@@ -40,8 +40,6 @@ app.use((err, req, res, next) => {
   res.status(500).send("Something went wrong!");
 });
 
-import "./config/passport.mjs";
-
 app.get("/", (req, res) => {
   res.send("Welcome to RampPay Server");
 });
