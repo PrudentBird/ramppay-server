@@ -71,14 +71,13 @@ app.use(
       ttl: 60 * 60,
     }),
     cookie: {
-      httpOnly: false,
-      secure: true,
+      httpOnly: true,
+      secure: true, 
       expires: expirationDate,
       sameSite: "none",
     },
   })
 );
-
 
 app.use(passport.session());
 
