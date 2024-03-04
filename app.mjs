@@ -65,16 +65,16 @@ app.use(
   session({
     secret: `${process.env.key}`,
     resave: false,
-    saveUninitialized: true,
-    store: create({
-      client,
-      ttl: 60 * 60,
-    }),
+    saveUninitialized: false,
+    // store: create({
+    //   client,
+    //   ttl: 60 * 60,
+    // }),
     cookie: {
-      httpOnly: true,
-      secure: true, 
+      // httpOnly: true,
+      // secure: true, 
       expires: expirationDate,
-      sameSite: "none",
+      // sameSite: "none",
     },
   })
 );
@@ -135,8 +135,6 @@ app.post("/login", (req, res, next) => {
 
     req.logIn(user, async () => {
       try {
-        await user.save();
-
         res.cookie("sessionId", req.sessionID, {
           httpOnly: false,
           secure: true,
@@ -159,8 +157,6 @@ app.post("/login", (req, res, next) => {
 });
 
 app.use("/protected", (req, res) => {
-  console.log(req.session);
-  console.log(req.user);
   if (req.isAuthenticated()) {
     res.status(200).json({
       success: true,
