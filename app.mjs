@@ -8,7 +8,8 @@ import passport from "passport";
 import session from "express-session";
 import cookieParser from "cookie-parser";
 import "./config/passport.mjs";
-import { create } from "connect-mongo";
+import mongoPkg from "connect-mongo";
+const { create } = mongoPkg;
 import { MongoClient } from "mongodb";
 
 const mongoUrl = `mongodb+srv://danielwari:${process.env.key}@ramppay.jmcq7vl.mongodb.net/ramppay-session`;
