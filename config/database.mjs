@@ -22,7 +22,6 @@ const userSchema = Schema({
     type: String,
     required: true,
   },
-  usertoken: String,
 });
 
 const UserModel = model("User", userSchema);

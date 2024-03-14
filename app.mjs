@@ -37,28 +37,6 @@ app.use((err, req, res, next) => {
   res.status(500).send("Something went wrong!");
 });
 
-app.post("/logout", async (req, res) => {
-  console.log(req.session);
-  console.log(req.user);
-  try {
-    req.logout(() => {
-      res.clearCookie("sessionId");
-      res.clearCookie("connect.sid");
-      res.status(200).json({
-        success: true,
-        message: "Logged out successfully",
-      });
-    });
-    return [];
-  } catch (error) {
-    console.error("Error logging out:", error);
-    return res.status(500).json({
-      error: true,
-      message: "Failed to logout",
-    });
-  }
-});
-
 const expirationDate = new Date(Date.now() + 3600000);
 
 app.use(
@@ -72,7 +50,7 @@ app.use(
     // }),
     cookie: {
       // httpOnly: true,
-      // secure: true, 
+      // secure: true,
       expires: expirationDate,
       // sameSite: "none",
     },
@@ -135,13 +113,6 @@ app.post("/login", (req, res, next) => {
 
     req.logIn(user, async () => {
       try {
-        res.cookie("sessionId", req.sessionID, {
-          httpOnly: false,
-          secure: true,
-          expires: expirationDate,
-          sameSite: "none",
-        });
-
         return res.send({
           success: true,
           message: "Logged in successfully!",
@@ -171,6 +142,35 @@ app.use("/protected", (req, res) => {
     res.status(401).json({
       error: true,
       message: "Authentication failed. User not authenticated.",
+    });
+  }
+});
+
+app.post("/logout", async (req, res) => {
+  try {
+    req.logout(() => {
+      req.session.destroy((err) => {
+        if (err) {
+          console.error('Error destroying session:', err);
+          return res.status(500).json({
+            error: true,
+            message: "Failed to logout",
+          });
+        } else {
+          res.clearCookie("sessionId");
+          res.clearCookie("connect.sid");
+          res.status(200).json({
+            success: true,
+            message: "Logged out successfully",
+          });
+        }
+      });
+    });
+  } catch (error) {
+    console.error("Error logging out:", error);
+    return res.status(500).json({
+      error: true,
+      message: "Failed to logout",
     });
   }
 });
